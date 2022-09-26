@@ -1,52 +1,42 @@
 [
   {
-    "bbox": [
-      106.68000030517578,
-      514.638916015625,
-      477.06640625,
-      526.638916015625
+    "origin": [
+      192.58795166015625,
+      587.015625
     ],
-    "text": "Adipisci amet adipisci eius quisquam porro adipisci etincidunt.",
+    "text": "Modi quaerat adipisci quiquia consectetur.",
     "page": 0
   },
   {
-    "bbox": [
-      395.5921325683594,
-      420.4201965332031,
-      522.5743408203125,
-      432.4201965332031
+    "origin": [
+      274.81201171875,
+      178.734375
     ],
-    "text": "Eius modi velit quaerat",
+    "text": "Eius labore sit velit porro modi dolor.",
     "page": 0
   },
   {
-    "bbox": [
-      181.71600341796875,
-      341.9045715332031,
-      364.62640380859375,
-      353.9045715332031
+    "origin": [
+      264.4200134277344,
+      257.25
     ],
-    "text": "Porro quisquam labore est porro.",
+    "text": "Quaerat labore sed dolor magnam labore.",
     "page": 0
   },
   {
-    "bbox": [
-      74.4000015258789,
-      577.451416015625,
-      120.7229995727539,
-      589.451416015625
+    "origin": [
+      345.4319763183594,
+      398.578125
     ],
-    "text": "tempora",
+    "text": "Dolor sit est est modi aliquam.",
     "page": 0
   },
   {
-    "bbox": [
-      463.59600830078125,
-      137.76394653320312,
-      522.8823852539062,
-      149.76394653320312
+    "origin": [
+      406.9799499511719,
+      288.65625
     ],
-    "text": "numquam.",
+    "text": "Consectetur dolorem",
     "page": 0
   }
 ]
