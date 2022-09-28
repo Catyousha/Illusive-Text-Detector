@@ -1,42 +1,42 @@
 [
   {
     "origin": [
-      289.8119812011719,
-      225.84375
+      489.2640380859375,
+      210.140625
     ],
-    "text": "Amet est tempora velit.",
+    "text": "porro.",
+    "page": 0
+  },
+  {
+    "origin": [
+      382.3919982910156,
+      398.578125
+    ],
+    "text": "Dolore quiquia quisquam",
     "page": 0
   },
   {
     "origin": [
       74.4000015258789,
-      508.5
+      147.328125
     ],
-    "text": "Quaerat modi porro tempora sit etincidunt aliquam velit.",
+    "text": "Aliquam ipsum dolore sit sit.",
     "page": 0
   },
   {
     "origin": [
       74.4000015258789,
-      225.84375
+      398.578125
     ],
-    "text": "Eius quiquia sit numquam consectetur.",
+    "text": "velit numquam quiquia neque aliquam magnam modi.",
     "page": 0
   },
   {
     "origin": [
-      74.4000015258789,
-      524.203125
+      278.13592529296875,
+      194.4375
     ],
-    "text": "numquam dolor.",
-    "page": 0
-  },
-  {
-    "origin": [
-      144.15599060058594,
-      665.53125
-    ],
-    "text": "Ipsum dolor sed sed.",
+    "text": "Ipsum etincidunt dolor velit.",
     "page": 0
   }
 ]

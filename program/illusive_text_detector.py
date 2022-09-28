@@ -17,12 +17,13 @@ class IllusiveTextDetector:
     def detect(self, filename: str):
         doc = fitz.open(filename)
         predict = []
+        bboxes = []
         for curr_page, page in enumerate(doc):
             text_page = page.get_textpage()
             page_dict = text_page.extractDICT()
             blocks = [b for b in page_dict["blocks"]]
             extracted_spans = self._get_spans(blocks)
-            
+            # print(blocks)
             illusive_text = [
                 {
                     # "bbox": list(s["bbox"]),
@@ -31,5 +32,10 @@ class IllusiveTextDetector:
                     "page": curr_page,
                 } for s in extracted_spans if s["color"] == self.COLOR_WHITE
             ]
+            bbox = [
+                list(s["bbox"])
+                for s in extracted_spans if s["color"] == self.COLOR_WHITE
+            ]
             predict += illusive_text
-        return predict
+            bboxes += bbox
+        return predict, bbox
