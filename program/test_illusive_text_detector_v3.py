@@ -46,7 +46,7 @@ def _comparator(actual, predicted):
     cond1 = math.isclose(actual["origin"][0], predicted["origin"][0], abs_tol=2)
     cond2 = math.isclose(actual["origin"][1], predicted["origin"][1], abs_tol=2)
     cond3 = actual["text"] == predicted["text"]
-    # assert(cond1 and cond2 and cond3) # PROGRAM IS FAILED IF ERROR
+    assert(cond1 and cond2 and cond3) # PROGRAM IS FAILED IF ERROR
     if(not(cond1 and cond2 and cond3)):
         print(actual, predicted)
 
@@ -87,9 +87,6 @@ def test_detector():
         predicted_labels = []
         
         for i in range(actual.__len__()):
-            if(actual[i]["text"] == " " and IGNORE_REAL_SPACE):
-                continue
-
             a, p = _comparator(actual[i], predicted[i])
             actual_labels.append(a)
             predicted_labels.append(p)
