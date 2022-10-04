@@ -22,7 +22,7 @@ class IllusiveTextDetector:
                 
                 detected_chars.append({
                     "page": curr_page,
-                    "origin": list((round(origin[0], 0), round(origin[1], 0))),
+                    "origin": (origin[0], origin[1]),
                     "text": text,
                     "label": label,
                 })
