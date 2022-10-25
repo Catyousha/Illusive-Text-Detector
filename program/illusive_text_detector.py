@@ -31,8 +31,6 @@ class IllusiveTextDetector:
                 else:
                     label = self.LABEL_NON_ILLUSIVE
                     total_non_illusive += 1
-                if(text == "\n"):
-                    print("LINEBREAK")
                 
                 detected_chars.append({
                     # "page": curr_page,
