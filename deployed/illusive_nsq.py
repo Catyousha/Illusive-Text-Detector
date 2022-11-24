@@ -1,16 +1,18 @@
 from functools import reduce
-from http.client import HTTPException
-from flask import Flask, abort, jsonify, request
-from flask_cors import CORS, cross_origin
 import fitz
-from werkzeug.exceptions import default_exceptions
+import json
+from minio import Minio
+import nsq
+import tornado
+
+client = Minio(
+        "127.0.0.1:9000",
+        access_key="Q3AM3UQ867SPQQA43P2F",
+        secret_key="zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG",
+        secure=False,
+)
 
 COLOR_WHITE = 16777215
-
-app = Flask(__name__)
-cors = CORS(app)
-app.config['CORS_HEADERS'] = 'Content-Type'
-app.config['JSON_SORT_KEYS'] = False
 
 def _detect_chars(text_blocks):
     lines = [b['lines'] for b in text_blocks]
@@ -42,9 +44,7 @@ def _detect_chars(text_blocks):
         
     return detected_chars, total_illusive
 
-@app.route('/sendDocument', methods=['POST'])
-@cross_origin()
-def send_document():
+def detect(filename):
     """ return followed response
         {
             total_illusive_chars: 100,
@@ -70,41 +70,53 @@ def send_document():
             ]
         }
         """
-    try:
-        req_pdf_file = request.files['file'].stream.read()
-        pdf_file = fitz.open(stream=req_pdf_file)
-        pages = []
-        total_illusive = 0
-        for curr_page, page in enumerate(pdf_file):
-            text_page = page.get_textpage()
-            page_dict = text_page.extractRAWDICT()
-            items, total_illusive_curr = _detect_chars(page_dict["blocks"])
-            pages.append({
-                "page": curr_page,
-                "width": page_dict["width"],
-                "height": page_dict["height"],
-                "items": items,
-            })
-            total_illusive += total_illusive_curr
-
-        return jsonify({
-            "total_illusive_chars": total_illusive,
-            "pages": pages
+    obj = client.get_object("documents", filename)
+    pdf_file = fitz.open(stream=obj.read())
+    pages = []
+    total_illusive = 0
+    for curr_page, page in enumerate(pdf_file):
+        text_page = page.get_textpage()
+        page_dict = text_page.extractRAWDICT()
+        items, total_illusive_curr = _detect_chars(page_dict["blocks"])
+        pages.append({
+            "page": curr_page,
+            "width": page_dict["width"],
+            "height": page_dict["height"],
+            "items": items,
         })
+        total_illusive += total_illusive_curr
 
-    except Exception as e:
-        abort(500, e)
-
-@app.errorhandler(HTTPException)
-def handle_exception(e):
-   response = jsonify({
-        "code": e.code,
-        "name": e.name,
-        "description": e.description,
+    return json.dumps({
+        "total_illusive_chars": total_illusive,
+        "pages": pages
     })
-   return response, e.code
 
-if __name__ == '__main__':
-   for ex in default_exceptions:
-      app.register_error_handler(ex, handle_exception)
-   app.run(debug=True, port=2727)
+
+
+OUTPUT_QUEUE = []
+def subscriber_handler(message):
+    bbody = message.body
+    body = json.loads(bbody.decode('utf-8'))
+    result = detect(body['file_name'])
+    OUTPUT_QUEUE.append(result)
+    return True
+
+r = nsq.Reader(
+        message_handler=subscriber_handler,
+        lookupd_http_addresses=['http://127.0.0.1:4161'],
+        topic='TESTAGAIN',
+        channel='method1',
+        lookupd_poll_interval=15,
+    )
+
+writer = nsq.Writer(['localhost:4150'])
+def publish():
+    if(len(OUTPUT_QUEUE) != 0):
+        msg = OUTPUT_QUEUE.pop(0)
+        writer.pub('documents', msg.encode('utf-8'), finish_pub)
+
+def finish_pub(conn, data):
+    print(data)
+
+tornado.ioloop.PeriodicCallback(publish, 1000).start()
+nsq.run()
