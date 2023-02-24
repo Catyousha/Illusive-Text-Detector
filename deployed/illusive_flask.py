@@ -13,6 +13,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 app.config['JSON_SORT_KEYS'] = False
 
 def _detect_chars(text_blocks):
+    detected_text = ""
     lines = [b['lines'] for b in text_blocks]
     lines = reduce(lambda a,b: a+b, lines)
     spans = [l['spans'] for l in lines]
@@ -28,19 +29,22 @@ def _detect_chars(text_blocks):
             text = char["c"]
             bbox = char["bbox"]
             if span["color"] == COLOR_WHITE:
+                detected_text += f"❰{text}❱"
                 total_illusive += 1
             
-            detected_chars.append({
-                "char": text,
-                "rect": {
-                    "x1": bbox[0],
-                    "y1": bbox[1],
-                    "x2": bbox[2],
-                    "y2": bbox[3],
-                },
-            })
+                detected_chars.append({
+                    "char": text,
+                    "rect": {
+                        "x1": bbox[0],
+                        "y1": bbox[1],
+                        "x2": bbox[2],
+                        "y2": bbox[3],
+                    },
+                })
+            else:
+                detected_text += text
         
-    return detected_chars, total_illusive
+    return detected_chars, total_illusive, detected_text
 
 @app.route('/sendDocument', methods=['POST'])
 @cross_origin()
@@ -67,18 +71,20 @@ def send_document():
                     ],
                     ...
                 }
-            ]
+            ],
+            fulltext: "lorem ipsum`a`dolor"
         }
         """
     try:
         req_pdf_file = request.files['file'].stream.read()
         pdf_file = fitz.open(stream=req_pdf_file)
+        fulltext = ""
         pages = []
         total_illusive = 0
         for curr_page, page in enumerate(pdf_file):
             text_page = page.get_textpage()
             page_dict = text_page.extractRAWDICT()
-            items, total_illusive_curr = _detect_chars(page_dict["blocks"])
+            items, total_illusive_curr, detected_text = _detect_chars(page_dict["blocks"])
             pages.append({
                 "page": curr_page,
                 "width": page_dict["width"],
@@ -86,10 +92,12 @@ def send_document():
                 "items": items,
             })
             total_illusive += total_illusive_curr
+            fulltext += detected_text
 
         return jsonify({
             "total_illusive_chars": total_illusive,
-            "pages": pages
+            "pages": pages,
+            "fulltext": fulltext,
         })
 
     except Exception as e:

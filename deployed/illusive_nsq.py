@@ -4,6 +4,7 @@ import json
 from minio import Minio
 import nsq
 import tornado
+from pprint import pprint
 
 client = Minio(
         "127.0.0.1:9000",
@@ -21,6 +22,7 @@ def _detect_chars(text_blocks):
     spans = reduce(lambda a,b: a+b, spans)
 
     detected_chars = []
+    detected_text = ""
 
     total_illusive = 0
 
@@ -30,19 +32,21 @@ def _detect_chars(text_blocks):
             text = char["c"]
             bbox = char["bbox"]
             if span["color"] == COLOR_WHITE:
+                detected_text += f"❰{text}❱"
                 total_illusive += 1
-            
-            detected_chars.append({
-                "char": text,
-                "rect": {
-                    "x1": bbox[0],
-                    "y1": bbox[1],
-                    "x2": bbox[2],
-                    "y2": bbox[3],
-                },
-            })
+                detected_chars.append({
+                    "char": text,
+                    "rect": {
+                        "x1": bbox[0],
+                        "y1": bbox[1],
+                        "x2": bbox[2],
+                        "y2": bbox[3],
+                    },
+                })
+            else:
+                detected_text += text
         
-    return detected_chars, total_illusive
+    return detected_chars, total_illusive, detected_text
 
 def detect(filename):
     """ return followed response
@@ -73,6 +77,7 @@ def detect(filename):
     obj = client.get_object("documents", filename)
     pdf_file = fitz.open(stream=obj.read())
     pages = []
+    fulltext = ""
     total_illusive = 0
     for curr_page, page in enumerate(pdf_file):
         text_page = page.get_textpage()
@@ -88,8 +93,9 @@ def detect(filename):
 
     return json.dumps({
         "total_illusive_chars": total_illusive,
-        "pages": pages
-    })
+        "pages": pages,
+        "fulltext": fulltext,
+    }, indent=4)
 
 
 
@@ -113,6 +119,7 @@ writer = nsq.Writer(['localhost:4150'])
 def publish():
     if(len(OUTPUT_QUEUE) != 0):
         msg = OUTPUT_QUEUE.pop(0)
+        pprint(msg)
         writer.pub('documents', msg.encode('utf-8'), finish_pub)
 
 def finish_pub(conn, data):
